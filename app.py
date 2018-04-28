@@ -35,24 +35,31 @@ def user():
     response['message'] = ''
 
     if request.method == 'POST':
-       username = request.args.get('username', None)
-       radiusSettings = request.args.get('radius', None)
+        userId = request.args.get('userId', None)
+        username = request.args.get('username', None)
+        radiusSettings = request.args.get('radius', None)
 
-       if username is None:
+        if userId is None:
+            response['status'] = 404
+            response['message'] = 'userId was missing'
+            retResp = jsonify(response)
+            return retResp
+
+        if username is None:
            response['status'] = 404
            response['message'] = 'username was missing'
            retResp = jsonify(response)
            return retResp
-       if radiusSettings is None:
+        if radiusSettings is None:
            radiusSettings = app.config['DEFAULT_RADIUS']
-       print(username)
-       print(radiusSettings)
-       data = DefaultUser
-       data['userName'] = username
-       data['radiusSettings'] = radiusSettings#DBMan.createUser(username,radiusSettings)
-       response['status'] = 200
-       response['message'] = 'User successfully created'
-       response['data'] = data
+        print(username)
+        print(radiusSettings)
+        data = DefaultUser
+        data['userName'] = username
+        data['radiusSettings'] = radiusSettings#DBMan.createUser(userId,username,radiusSettings)
+        response['status'] = 200
+        response['message'] = 'User successfully created'
+        response['data'] = data
 
 
     elif request.method == 'GET':
@@ -72,6 +79,25 @@ def user():
        response['message'] = 'Bro dafuq'
 
     retResp = jsonify(response)
+    return retResp
+#
+# Asset:
+#   ID: UUID
+#   Owner: User.ID
+#   Link: URL
+#   Marked By: [MARK]
+@app.route('/place', methods=['POST'])
+def place():
+    # userId
+    # latlonstring
+    # dae binary
+    response = {}
+    if request.method != 'POST':
+        response['status'] = 404
+        response['message'] = '/place only supports POST requests'
+    userID = request.args
+
+
     return retResp
 
 # @app.route('/hello/<hello>')
