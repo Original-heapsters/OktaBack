@@ -6,6 +6,12 @@ app = Flask(__name__)
 app.config['DEFAULT_RADIUS'] = 20
 swagger = Swagger(app)
 
+DefaultUser = { 'id':'1asf2sg3gdfg456g7f890', 'username':'xXChuckersXx420', 'firstName' : 'Chuck', 'lastName' : 'Beans', 'radiusSettings':20, 'placedList' : ['7ghf87gfgw7fg87g', 'frgd545y4g4gr','wegf34t45grthe4ewg','ew4gerethrh5rhh','wefgwe4egegsrgerg'], 'markedList':['sdfsgdbb54rsr6s5hbh45','b45w56nb5n6e5n','h5w6srnb56n5n','6he56hn5yjnd5j','56je5heserhs5rh5','e5hsrhrssrjs6jsr'] }
+
+DefaultAsset = {'id':'sdkfuh78hfih8', 'owner':'1asf2sg3gdfg456g7f890', 'link':'iwh87a4gh8w7gh8g.dae', 'markedBy':['sfgzsrgs54gser5h','5sehsrhrh','se5hsrhrthsr5h','w43gw3aw3awag','hr6jtd7kfy7kfkj','gergsregzw4g']}
+
+DefaultMark = {'id':'d9a8dhfhsiufhis','userId':'1asf2sg3gdfg456g7f890','note':'xXCHUCKIEXx BBBOOIIIIIIIIII'}
+
 @app.route('/')
 def index():
     """Endpoint returning a blank index file
@@ -41,7 +47,9 @@ def user():
            radiusSettings = app.config['DEFAULT_RADIUS']
        print(username)
        print(radiusSettings)
-       data = {'username':username, 'fName':'cool','lName':'dude','radiusSetting':radiusSettings}#DBMan.createUser(username,radiusSettings)
+       data = DefaultUser
+       data['userName'] = username
+       data['radiusSettings'] = radiusSettings#DBMan.createUser(username,radiusSettings)
        response['status'] = 200
        response['message'] = 'User successfully created'
        response['data'] = data
@@ -54,7 +62,7 @@ def user():
            response['message'] = 'username was missing'
            retResp = jsonify(response)
            return retResp
-       data = {'fName':'cool','lName':'dude','radiusSetting':20}#DBMan.GetUser(username)
+       data = DefaultUser#DBMan.GetUser(username)
        response['status'] = 200
        response['message'] = 'User successfully fetched'
        response['data'] = data
