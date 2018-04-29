@@ -186,10 +186,10 @@ def place():
         return retResp
 
 
-    userId = request.args.get('userId', None)
-    lat = request.args.get('lat', None)
-    lon = request.args.get('lon', None)
-    assetType = request.args.get('assetType', None)
+    userId = request.form.get('userId', None)
+    lat = request.form.get('lat', None)
+    lon = request.form.get('lon', None)
+    assetType = request.form.get('assetType', None)
     if userId is None:
         response['status'] = 404
         response['message'] = 'userId missing'
@@ -315,7 +315,7 @@ def usersmarks(userId):
         response['status'] = 404
         response['message'] = '/usersmarks only supports POST requests'
         retResp = jsonify(response)
-        return retResp 
+        return retResp
 
     data =usersAssets(userId)
     response['status'] = 200
@@ -326,7 +326,7 @@ def usersmarks(userId):
     return retResp
 
 
-    
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -345,7 +345,7 @@ def getUser(id):
     instance = db.session.query(User).filter_by(id=id).first()
     if instance:
 
-        return instance   
+        return instance
 
 def placeAsset(assetId,userId,link,type,latLongString=None):
     exists = Asset.query.filter_by(id=assetId).first()
@@ -364,7 +364,7 @@ def found(id):
     if instance:
         return instance
     else:
-        return instance   
+        return instance
 
 def usersAssets(userId):
     instance = db.session.query(Mark).limit(3)
@@ -386,9 +386,3 @@ def mark(markId, userId, assetId, note=None):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, use_reloader=True)
-
-
-
-
-
-
