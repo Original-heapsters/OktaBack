@@ -203,7 +203,7 @@ def place():
         return retResp
 
     latLongString = str(lat) + ',' + str(lon)
-    
+
     if assetType is None:
         response['status'] = 404
         response['message'] = 'Asset type is missing'
@@ -265,7 +265,7 @@ def found(assetId=None):
         response['status'] = 404
         response['message'] = '/found only supports POST requests'
         retResp = jsonify(response)
-        return retResp 
+        return retResp
 
     data =found(assetId)
     response['status'] = 200
@@ -291,6 +291,7 @@ def mark(assetId=None):
     if note is None:
         note = ''
     data = mark(markId, userId, assetId, note)
+
     data = {}
     data['markId'] = markId
     data['userId'] = userId
@@ -343,6 +344,7 @@ def createUser(id, radiusSettings, first=None, last = None,):
 def getUser(id):
     instance = db.session.query(User).filter_by(id=id).first()
     if instance:
+
         return instance   
 
 def placeAsset(assetId,userId,link,type,latLongString=None):
@@ -380,7 +382,6 @@ def mark(markId, userId, assetId, note=None):
         return newMark
     else:
         return newMark
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
