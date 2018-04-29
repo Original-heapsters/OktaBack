@@ -46,13 +46,15 @@ class Asset(db.Model):
     owner = db.Column(db.String(80), db.ForeignKey('users.ID'), nullable=False)
     link = db.Column(db.String(256))
     type = db.Column(Enum("image", "3d", "video"))
+    latlon = db.Column(db.String(256))
 
     def serialized(self):
         return {
         'ID':self.ID,
-        'owmer':self.owner,
+        'owner':self.owner,
         'link':self.link,
-        'type':self.type
+        'type':self.type,
+        'latlon':self.latlon
         }
 
 
