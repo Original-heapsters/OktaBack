@@ -50,13 +50,14 @@ class Asset(db.Model):
 
     type = db.Column(Enum("image", "3d", "video","dae", "mp4", "png", "jpg", "jpeg", "mp3", "mov"))
     latlon = db.Column(db.String(256))
+
     def serialized(self):
         return {
         'id':self.id,
         'owner':self.owner,
         'link':self.link,
         'type':self.type,
-        'latlon':self.latLon
+        'latlon':self.latlon
         }
 
 
@@ -64,7 +65,7 @@ class Mark(db.Model):
     __tablename__ = 'marks'
     id = db.Column(db.String(80), unique=True, nullable=False, primary_key=True)
     user= db.Column(db.String(80), db.ForeignKey('users.id'), nullable=False)
-    #user= db.Column(db.String(80), nullable=False)
+    asset = db.Column(db.String(80), db.ForeignKey('assets.id'),nullable=False)
     note= Column(String(200))
 
     def serialized(self):
@@ -86,11 +87,11 @@ class Mark(db.Model):
 # db.session.add(newUser)
 # db.session.commit()
 
-# newAsset = Asset(id='assetIDtest', owner=newUser.id, link='iwh87a4gh8w7gh8g.dae', type='dae')
+# newAsset = Asset(id='assetIDtest', owner=newUser.id, link='iwh87a4gh8w7gh8g.dae', type='dae',latlon='51.5033640,-0.1276250')
 # db.session.add(newAsset)
 # db.session.commit()
 
-# newMark = Mark(id='d9a8dhfhsiufhis', user='1asf2sg3gdfg456g7f890', note="WORK")
+# newMark = Mark(id='d9a8dhfhsiufhis', user='jeimmi123',asset= 'assetIDtest', note="WORK")
 # db.session.add(newMark)
 # db.session.commit()
 
@@ -240,7 +241,7 @@ def place():
 
     response['status'] = 200
     response['message'] = 'Successfully posted asset'
-    response['data'] = data.serialized()
+    response['data'] = data
     retResp = jsonify(response)
     return retResp
 
@@ -289,11 +290,12 @@ def mark(assetId=None):
     note = request.args.get('note', None)
     if note is None:
         note = ''
-    # .mark(markId, assetId, userId, note)
+    data = mark(markId, userId, assetId, note)
+
     data = {}
     data['markId'] = markId
-    data['assetId'] = assetId
     data['userId'] = userId
+    data['assetId'] = assetId
     data['note'] = note
     response['status'] = 200
     response['message'] = 'Successfully marked asset'
@@ -305,6 +307,26 @@ def mark(assetId=None):
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                filename)
+
+@app.route('/usersmarks/<userId>', methods=['GET'])
+def usersmarks(userId):
+    response = {}
+    if request.method != 'GET':
+        response['status'] = 404
+        response['message'] = '/usersmarks only supports POST requests'
+        retResp = jsonify(response)
+        return retResp 
+
+    data =usersAssets(userId)
+    response['status'] = 200
+    response['message'] = 'Successfully fetched found marked assets'
+    if data is not None:
+        response['data'] = data.serialized()
+        retResp = jsonify(response)
+    return retResp
+
+
+    
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -322,12 +344,8 @@ def createUser(id, radiusSettings, first=None, last = None,):
 def getUser(id):
     instance = db.session.query(User).filter_by(id=id).first()
     if instance:
-        return instance
-#    else:
-        #instance = createUser(id, app.config['DEFAULT_RADIUS'])
-        #session.add(instance)
-        #session.commit()
-#        return jsonify("User not found")
+
+        return instance   
 
 def placeAsset(assetId,userId,link,type,latLongString=None):
     exists = Asset.query.filter_by(id=assetId).first()
@@ -342,13 +360,35 @@ def placeAsset(assetId,userId,link,type,latLongString=None):
         return newAsset
 
 def found(id):
-    session = Session()
     instance = db.session.query(Asset).filter_by(id=id).first()
     if instance:
         return instance
     else:
+        return instance   
+
+def usersAssets(userId):
+    instance = db.session.query(Mark).limit(3)
+    if instance:
+        print(instance)
         return instance
+
+
+def mark(markId, userId, assetId, note=None):
+    exists = Mark.query.filter_by(id=markId).first()
+    newMark = Mark(id=markId, user=userId, asset=assetId, note=note)
+    if not exists:
+        db.session.add(newMark)
+        db.session.commit()
+        return newMark
+    else:
+        return newMark
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, use_reloader=True)
+
+
+
+
+
+
