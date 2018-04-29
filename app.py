@@ -291,10 +291,15 @@ def mark(assetId=None):
     if note is None:
         note = ''
 <<<<<<< HEAD
+<<<<<<< HEAD
     data = mark(markId, userId, assetId, note)
 =======
     # .mark(markId, assetId, userId, note)
 >>>>>>> 543c5b54c6d32613122779f59c9dfc0133af426d
+=======
+    data = mark(markId, userId, assetId, note)
+
+>>>>>>> 6a2cbbce862de68824fd951f1ae7fed10a8030e2
     data = {}
     data['markId'] = markId
     data['userId'] = userId
@@ -348,6 +353,7 @@ def getUser(id):
     instance = db.session.query(User).filter_by(id=id).first()
     if instance:
 <<<<<<< HEAD
+<<<<<<< HEAD
         return instance   
 =======
         return instance
@@ -357,6 +363,10 @@ def getUser(id):
         #session.commit()
 #        return jsonify("User not found")
 >>>>>>> 543c5b54c6d32613122779f59c9dfc0133af426d
+=======
+
+        return instance   
+>>>>>>> 6a2cbbce862de68824fd951f1ae7fed10a8030e2
 
 def placeAsset(assetId,userId,link,type,latLongString=None):
     exists = Asset.query.filter_by(id=assetId).first()
@@ -376,6 +386,9 @@ def found(id):
         return instance
     else:
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 6a2cbbce862de68824fd951f1ae7fed10a8030e2
         return instance   
 
 def usersAssets(userId):
@@ -395,10 +408,13 @@ def mark(markId, userId, assetId, note=None):
     else:
         return newMark
 
+<<<<<<< HEAD
 =======
         return instance
 >>>>>>> 543c5b54c6d32613122779f59c9dfc0133af426d
 
+=======
+>>>>>>> 6a2cbbce862de68824fd951f1ae7fed10a8030e2
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, use_reloader=True)
