@@ -268,6 +268,9 @@ def found(assetId=None):
         return retResp
 
     data =found(assetId)
+    data['markedList'] = [
+    {'userId':'lilTay', 'note':'Ive been stacking bricks here for ages scrub'},{'userId':'bobbychuck', 'note':'Hackathons here are dah shnitzel'},{'userId':'TAYNE', 'note':'woah vicky is BAE, check out this CUBE BBBOOIIIIIIIIII'}
+    ]
     response['status'] = 200
     response['message'] = 'Successfully fetched found asset'
     if data is not None:
