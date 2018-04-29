@@ -18,7 +18,7 @@ class DBManager(object):
 	    db.session.commit()
 	    session.query(Address).filter(Address.person == person).one()
 
-	    print(User.query.all())    
+	    print(User.query.all())
 	    return "user created"
 
 
