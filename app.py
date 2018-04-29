@@ -384,7 +384,7 @@ def mark(markId, userId, assetId, note=None):
         return newMark
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 8000))
     app.run(debug=True, use_reloader=True)
 
 
