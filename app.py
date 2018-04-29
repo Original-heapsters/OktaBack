@@ -3,15 +3,62 @@ import uuid
 from flask import Flask, json, jsonify, request, send_from_directory
 from werkzeug.utils import secure_filename
 from flasgger import Swagger
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm.collections import attribute_mapped_collection
+from sqlalchemy.orm import *
+from sqlalchemy import *
+from DBManager import DBManager
 
 
 UPLOAD_FOLDER = './static'
 ALLOWED_EXTENSIONS = set(['dae', 'mp4', 'png', 'jpg', 'jpeg', 'mp3', 'mov'])
+project_dir = os.path.dirname(os.path.abspath(__file__))
+database_file = "sqlite:///{}".format(os.path.join(project_dir, "ardb.db"))
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config["SQLALCHEMY_DATABASE_URI"] = database_file
 app.config['DEFAULT_RADIUS'] = 20
 swagger = Swagger(app)
+db = SQLAlchemy(app)
+meta = MetaData()
+meta.bind = db
+
+marked_association = Table('marked_association', meta,
+    Column('user_id', String, ForeignKey('users.ID')),
+    Column('asset_id', String, ForeignKey('assets.ID'))
+)
+
+placed_association = Table('placed_association', meta,
+    Column('user_id', String, ForeignKey('users.ID')),
+    Column('asset_id', String, ForeignKey('assets.ID'))
+)
+
+class User(db.Model):
+    __tablename__ = 'users'
+    ID = db.Column(db.String(80), unique=True, nullable=False, primary_key=True)
+    firstName = db.Column(db.String(10), nullable=False)
+    lastName = db.Column(db.String(10), nullable=False)
+    radiusSettings = db.Column(db.Integer)
+    markedList = relationship("Asset", secondary=marked_association, back_populates="users")
+    placedList = relationship("Asset", secondary=placed_association, back_populates="users")
+
+    def __repr__(self):
+        return "<User(firstName='%s', lastName='%s', ID='%s')>" % (self.firstName, self.lastName, self.ID)
+
+class Asset(db.Model):
+    __tablename__ = 'assets'
+    ID = db.Column(db.String(80), unique=True, nullable=False, primary_key=True)
+    owner = db.Column(db.String(80), db.ForeignKey('users.ID'), nullable=False)
+    link = db.Column(db.String(256))
+    type = db.Column(Enum("image", "3d", "video"))
+    markedBy = relationship("Mark", collection_class=attribute_mapped_collection("idMark"), backref="note")
+
+class Mark(db.Model):
+    __tablename__ = 'marks'
+    idMark = db.Column(db.String(80), unique=True, nullable=False, primary_key=True)
+    user: db.Column(db.String(80), db.ForeignKey('users.ID'), nullable=False)
+    note: Column(String(200))
 
 DefaultUser = { 'id':'1asf2sg3gdfg456g7f890', 'username':'xXChuckersXx420', 'firstName' : 'Chuck', 'lastName' : 'Beans', 'radiusSettings':20, 'placedList' : ['7ghf87gfgw7fg87g', 'frgd545y4g4gr','wegf34t45grthe4ewg','ew4gerethrh5rhh','wefgwe4egegsrgerg'], 'markedList':['sdfsgdbb54rsr6s5hbh45','b45w56nb5n6e5n','h5w6srnb56n5n','6he56hn5yjnd5j','56je5heserhs5rh5','e5hsrhrssrjs6jsr'] }
 
@@ -61,6 +108,8 @@ def user():
            radiusSettings = app.config['DEFAULT_RADIUS']
         print(username)
         print(radiusSettings)
+        createUser(userId,username,radiusSettings)
+
         data = DefaultUser
         data['id'] = userId
         data['userName'] = username
@@ -211,6 +260,19 @@ def uploaded_file(filename):
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def createUser(self,id, radiusSettings, first=None, last = None,):
+    newUser = User(id=id, radiusSettings=radiusSettings, firstName=first, lastName=last)
+    db.session.add(newUser)
+    db.create_all()
+    db.session.commit()
+    db.session.query(Address).filter(Address.person == person).one()
+
+    print(User.query.all())
+    return "user created"
+
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, use_reloader=True)

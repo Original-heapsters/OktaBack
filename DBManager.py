@@ -1,34 +1,31 @@
-from os import system
-from flask import Flask, json, jsonify, request
-from flask_sqlalchemy import SQLAlchemy
-from flasgger import Swagger
-from sys import model.py
+from sqlalchemy import *
 
-class DBManager(object):
-	def __init__(self):
-		project_dir = os.path.dirname(os.path.abspath(__file__))
-		database_file = "sqlite:///{}".format(os.path.join(project_dir, "ardb.db"))
+class DBManager:
+    db = None
+    marked_association = None
+    placed_association = None
+    meta = None
+    def __init__(self, db=None):
+        self.db = db
+        self.meta = MetaData()
+        self.meta.bind = self.db
 
+        self.marked_association = Table('marked_association', self.meta,
+            Column('user_id', String, ForeignKey('users.ID')),
+            Column('asset_id', String, ForeignKey('assets.ID'))
+        )
 
-	def createUser(id, radiusSettings, first=None, last = None,):
+        self.placed_association = Table('placed_association', self.meta,
+            Column('user_id', String, ForeignKey('users.ID')),
+            Column('asset_id', String, ForeignKey('assets.ID'))
+        )
 
-	    newUser = User(id=id, radiusSettings=radiusSettings, firstName=first, lastName=last,)
-	    db.session.add(newUser)
-	    db.create_all()
-	    db.session.commit()
-	    session.query(Address).filter(Address.person == person).one()
+    def createUser(self,id, radiusSettings, first=None, last = None,):
+        newUser = User(id=id, radiusSettings=radiusSettings, firstName=first, lastName=last,)
+        self.db.session.add(newUser)
+        self.db.create_all()
+        self.db.session.commit()
+        self.db.session.query(Address).filter(Address.person == person).one()
 
-	    print(User.query.all())
-	    return "user created"
-
-
-
-
-
-if __name__ == "__main__":
-	temp = DBManager()
-	tmp.createUser("1234",1,"jeimmi","gomez")
-
-    #port = int(os.environ.get("PORT", 5000))
-    #app.run(host='0.0.0.0', port=port, debug=False)
-    
+        print(User.query.all())
+        return "user created"
