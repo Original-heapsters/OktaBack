@@ -24,25 +24,19 @@ db = SQLAlchemy(app)
 meta = MetaData()
 meta.bind = db
 
-marked_association = Table('marked_association', meta,
-    Column('user_id', String, ForeignKey('users.ID')),
-    Column('asset_id', String, ForeignKey('assets.ID'))
-)
-
-placed_association = Table('placed_association', meta,
-    Column('user_id', String, ForeignKey('users.ID')),
-    Column('asset_id', String, ForeignKey('assets.ID'))
-)
-
 class User(db.Model):
     __tablename__ = 'users'
     ID = db.Column(db.String(80), unique=True, nullable=False, primary_key=True)
     firstName = db.Column(db.String(10), nullable=False)
     lastName = db.Column(db.String(10), nullable=False)
     radiusSettings = db.Column(db.Integer)
-    markedList = relationship("Asset", secondary=marked_association, back_populates="users")
-    placedList = relationship("Asset", secondary=placed_association, back_populates="users")
 
+    def serialized(self):
+        return { 'ID':self.ID,
+        'firstName':self.firstName,
+        'lastName':self.lastName,
+        'radiusSettings':self.radiusSettings
+        }
     def __repr__(self):
         return "<User(firstName='%s', lastName='%s', ID='%s')>" % (self.firstName, self.lastName, self.ID)
 
@@ -52,13 +46,28 @@ class Asset(db.Model):
     owner = db.Column(db.String(80), db.ForeignKey('users.ID'), nullable=False)
     link = db.Column(db.String(256))
     type = db.Column(Enum("image", "3d", "video"))
-    markedBy = relationship("Mark", collection_class=attribute_mapped_collection("idMark"), backref="note")
+
+    def serialized(self):
+        return {
+        'ID':self.ID,
+        'owmer':self.owner,
+        'link':self.link,
+        'type':self.type
+        }
+
 
 class Mark(db.Model):
     __tablename__ = 'marks'
     idMark = db.Column(db.String(80), unique=True, nullable=False, primary_key=True)
     user: db.Column(db.String(80), db.ForeignKey('users.ID'), nullable=False)
     note: Column(String(200))
+
+    def serialized(self):
+        return {
+        'idMark':self.idMark,
+        'user':self.user,
+        'note':self.note
+        }
 
 DefaultUser = { 'id':'1asf2sg3gdfg456g7f890', 'username':'xXChuckersXx420', 'firstName' : 'Chuck', 'lastName' : 'Beans', 'radiusSettings':20, 'placedList' : ['7ghf87gfgw7fg87g', 'frgd545y4g4gr','wegf34t45grthe4ewg','ew4gerethrh5rhh','wefgwe4egegsrgerg'], 'markedList':['sdfsgdbb54rsr6s5hbh45','b45w56nb5n6e5n','h5w6srnb56n5n','6he56hn5yjnd5j','56je5heserhs5rh5','e5hsrhrssrjs6jsr'] }
 
@@ -91,6 +100,8 @@ def user():
     if request.method == 'POST':
         userId = request.args.get('userId', None)
         username = request.args.get('username', None)
+        firstName = request.args.get('firstName', None)
+        lastName = request.args.get('lastName', None)
         radiusSettings = request.args.get('radius', None)
 
         if userId is None:
@@ -104,19 +115,25 @@ def user():
            response['message'] = 'username was missing'
            retResp = jsonify(response)
            return retResp
+        if firstName is None:
+           response['status'] = 404
+           response['message'] = 'firstName was missing'
+           retResp = jsonify(response)
+           return retResp
+        if lastName is None:
+           response['status'] = 404
+           response['message'] = 'lastName was missing'
+           retResp = jsonify(response)
+           return retResp
         if radiusSettings is None:
            radiusSettings = app.config['DEFAULT_RADIUS']
         print(username)
         print(radiusSettings)
-        createUser(userId,username,radiusSettings)
-
-        data = DefaultUser
-        data['id'] = userId
-        data['userName'] = username
-        data['radiusSettings'] = radiusSettings#DBMan.createUser(userId,username,radiusSettings)
+        userObj = createUser(userId,radiusSettings,firstName,lastName)
+        print (userObj)
         response['status'] = 200
         response['message'] = 'User successfully created'
-        response['data'] = data
+        response['data'] = userObj.serialized()
 
 
     elif request.method == 'GET':
@@ -261,15 +278,25 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def createUser(self,id, radiusSettings, first=None, last = None,):
-    newUser = User(id=id, radiusSettings=radiusSettings, firstName=first, lastName=last)
-    db.session.add(newUser)
-    db.create_all()
-    db.session.commit()
-    db.session.query(Address).filter(Address.person == person).one()
+def createUser(id, radiusSettings, first=None, last = None,):
+    exists = User.query.filter_by(ID=id).first()
+    newUser = User(ID=id, radiusSettings=radiusSettings, firstName=first, lastName=last)
+    if not exists:
+        db.session.add(newUser)
+        db.session.commit()
+        return newUser
+    else:
+        return newUser
 
-    print(User.query.all())
-    return "user created"
+def get_or_create(session, model, **kwargs):
+    instance = session.query(model).filter_by(**kwargs).first()
+    if instance:
+        return instance
+    else:
+        instance = model(**kwargs)
+        session.add(instance)
+        session.commit()
+        return instance
 
 
 
