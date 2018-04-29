@@ -203,7 +203,7 @@ def place():
         return retResp
 
     latLongString = str(lat) + ',' + str(lon)
-    
+
     if assetType is None:
         response['status'] = 404
         response['message'] = 'Asset type is missing'
@@ -265,7 +265,7 @@ def found(assetId=None):
         response['status'] = 404
         response['message'] = '/found only supports POST requests'
         retResp = jsonify(response)
-        return retResp 
+        return retResp
 
     data =found(assetId)
     response['status'] = 200
@@ -290,7 +290,11 @@ def mark(assetId=None):
     note = request.args.get('note', None)
     if note is None:
         note = ''
+<<<<<<< HEAD
     data = mark(markId, userId, assetId, note)
+=======
+    # .mark(markId, assetId, userId, note)
+>>>>>>> 543c5b54c6d32613122779f59c9dfc0133af426d
     data = {}
     data['markId'] = markId
     data['userId'] = userId
@@ -343,7 +347,16 @@ def createUser(id, radiusSettings, first=None, last = None,):
 def getUser(id):
     instance = db.session.query(User).filter_by(id=id).first()
     if instance:
+<<<<<<< HEAD
         return instance   
+=======
+        return instance
+#    else:
+        #instance = createUser(id, app.config['DEFAULT_RADIUS'])
+        #session.add(instance)
+        #session.commit()
+#        return jsonify("User not found")
+>>>>>>> 543c5b54c6d32613122779f59c9dfc0133af426d
 
 def placeAsset(assetId,userId,link,type,latLongString=None):
     exists = Asset.query.filter_by(id=assetId).first()
@@ -362,6 +375,7 @@ def found(id):
     if instance:
         return instance
     else:
+<<<<<<< HEAD
         return instance   
 
 def usersAssets(userId):
@@ -381,6 +395,9 @@ def mark(markId, userId, assetId, note=None):
     else:
         return newMark
 
+=======
+        return instance
+>>>>>>> 543c5b54c6d32613122779f59c9dfc0133af426d
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
