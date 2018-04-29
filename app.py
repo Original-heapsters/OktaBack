@@ -88,17 +88,9 @@ def user():
 
     retResp = jsonify(response)
     return retResp
-#
-# Asset:
-#   ID: UUID
-#   Owner: User.ID
-#   Link: URL
-#   Marked By: [MARK]
+
 @app.route('/place', methods=['POST'])
 def place():
-    # userId
-    # latlonstring
-    # dae binary
     response = {}
     if request.method != 'POST':
         response['status'] = 404
@@ -160,6 +152,19 @@ def place():
 
     response['status'] = 200
     response['message'] = 'Successfully posted asset'
+    response['data'] = data
+    retResp = jsonify(response)
+    return retResp
+
+@app.route('/nearby/<radius>/<locationString>', methods=['GET'])
+def nearby(radius=None, locationString=None):
+    response = {}
+    radiusInt = int(radius)
+    lat = locationString.split(',')[0]
+    lon = locationString.split(',')[1]
+    data = [DefaultAsset, DefaultAsset, DefaultAsset] #DBMan.findNearby(radiusInt, lat, lon)
+    response['status'] = 200
+    response['message'] = 'Successfully fetched nearby assets'
     response['data'] = data
     retResp = jsonify(response)
     return retResp
