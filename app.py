@@ -267,10 +267,10 @@ def found(assetId=None):
         retResp = jsonify(response)
         return retResp
 
-    data =found(assetId).serialized()
-    data['markedList'] = [
-    {'userId':'lilTay', 'note':'Ive been stacking bricks here for ages scrub'},{'userId':'bobbychuck', 'note':'Hackathons here are dah shnitzel'},{'userId':'TAYNE', 'note':'woah vicky is BAE, check out this CUBE BBBOOIIIIIIIIII'}
-    ]
+    data =found(assetId)
+    # data['markedList'] = [
+    # {'userId':'lilTay', 'note':'Ive been stacking bricks here for ages scrub'},{'userId':'bobbychuck', 'note':'Hackathons here are dah shnitzel'},{'userId':'TAYNE', 'note':'woah vicky is BAE, check out this CUBE BBBOOIIIIIIIIII'}
+    # ]
     response['status'] = 200
     response['message'] = 'Successfully fetched found asset'
     if data is not None:
@@ -365,7 +365,14 @@ def placeAsset(assetId,userId,link,type,latLongString=None):
 def found(id):
     instance = db.session.query(Asset).filter_by(id=id).first()
     if instance:
-        return instance
+        data = instance.serialized()
+        marks = db.session.query(Mark).filter_by(asset=id).all()
+        if marks is not None:
+            markList = []
+            for mark in marks:
+                markList.append(mark.serialized())
+            data['markedList'] = markList
+        return data
     else:
         return instance
 
