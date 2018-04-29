@@ -268,7 +268,9 @@ def found(assetId=None):
     if data is not None:
         response['data'] = data.serialized()
         retResp = jsonify(response)
-        return retResp
+    return retResp
+
+
 
 @app.route('/mark/<assetId>', methods=['POST'])
 def mark(assetId=None):
@@ -283,7 +285,7 @@ def mark(assetId=None):
     note = request.args.get('note', None)
     if note is None:
         note = ''
-    #DBMan.mark(markId, assetId, userId, note)
+    .mark(markId, assetId, userId, note)
     data = {}
     data['markId'] = markId
     data['assetId'] = assetId
@@ -336,6 +338,7 @@ def placeAsset(assetId,userId,link,type,latLongString=None):
         return newAsset
 
 def found(id):
+    session = Session()
     instance = db.session.query(Asset).filter_by(id=id).first()
     if instance:
         return instance
