@@ -11,7 +11,9 @@ from DBManager import DBManager
 
 
 UPLOAD_FOLDER = './static'
-ALLOWED_EXTENSIONS = set(['dae', 'mp4', 'png', 'jpg', 'jpeg', 'mp3', 'mov'])
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+ALLOWED_EXTENSIONS = set(['dae', 'mp4', 'png', 'jpg', 'jpeg', 'mp3', 'mov','zip'])
 project_dir = os.path.dirname(os.path.abspath(__file__))
 database_file = "sqlite:///{}".format(os.path.join(project_dir, "ardb.db"))
 
@@ -45,14 +47,16 @@ class Asset(db.Model):
     id = db.Column(db.String(80), unique=True, nullable=False, primary_key=True)
     owner = db.Column(db.String(80), db.ForeignKey('users.id'), nullable=False)
     link = db.Column(db.String(256))
-    type = db.Column(Enum("image", "3d", "video","dae", "mp4", "png", "jpg", "jpeg", "mp3", "mov"))
 
+    type = db.Column(Enum("image", "3d", "video","dae", "mp4", "png", "jpg", "jpeg", "mp3", "mov"))
+    latlon = db.Column(db.String(256))
     def serialized(self):
         return {
         'id':self.id,
-        'owmer':self.owner,
+        'owner':self.owner,
         'link':self.link,
-        'type':self.type
+        'type':self.type,
+        'latlon':self.latLon
         }
 
 
@@ -180,11 +184,11 @@ def place():
         retResp = jsonify(response)
         return retResp
 
+
     userId = request.args.get('userId', None)
     lat = request.args.get('lat', None)
     lon = request.args.get('lon', None)
     assetType = request.args.get('assetType', None)
-
     if userId is None:
         response['status'] = 404
         response['message'] = 'userId missing'
