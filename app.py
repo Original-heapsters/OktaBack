@@ -54,7 +54,7 @@ class Asset(db.Model):
         'owner':self.owner,
         'link':self.link,
         'type':self.type,
-        'latlon':self.latlon
+        'latlon':self.latLon
         }
 
 
@@ -166,14 +166,14 @@ def place():
         retResp = jsonify(response)
         return retResp
 
-    userId = request.args.get('userId', None)
+    userId = request.form.get('userId', None)
     if userId is None:
         response['status'] = 404
         response['message'] = 'userId missing'
         retResp = jsonify(response)
         return retResp
-    lat = request.args.get('lat', None)
-    lon = request.args.get('lon', None)
+    lat = request.form.get('lat', None)
+    lon = request.form.get('lon', None)
 
     if lat is None or lon is None:
         response['status'] = 404
@@ -182,7 +182,7 @@ def place():
         return retResp
 
     latLongString = str(lat) + ',' + str(lon)
-    assetType = request.args.get('assetType', None)
+    assetType = request.form.get('assetType', None)
     if assetType is None:
         response['status'] = 404
         response['message'] = 'Asset type is missing'
