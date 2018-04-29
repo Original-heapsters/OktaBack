@@ -290,16 +290,8 @@ def mark(assetId=None):
     note = request.args.get('note', None)
     if note is None:
         note = ''
-<<<<<<< HEAD
-<<<<<<< HEAD
-    data = mark(markId, userId, assetId, note)
-=======
-    # .mark(markId, assetId, userId, note)
->>>>>>> 543c5b54c6d32613122779f59c9dfc0133af426d
-=======
     data = mark(markId, userId, assetId, note)
 
->>>>>>> 6a2cbbce862de68824fd951f1ae7fed10a8030e2
     data = {}
     data['markId'] = markId
     data['userId'] = userId
