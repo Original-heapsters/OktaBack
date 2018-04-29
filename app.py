@@ -1,8 +1,15 @@
 import os
-from flask import Flask, json, jsonify, request
+import uuid
+from flask import Flask, json, jsonify, request, send_from_directory
+from werkzeug.utils import secure_filename
 from flasgger import Swagger
 
+
+UPLOAD_FOLDER = './static'
+ALLOWED_EXTENSIONS = set(['dae', 'mp4', 'png', 'jpg', 'jpeg', 'mp3', 'mov'])
+
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['DEFAULT_RADIUS'] = 20
 swagger = Swagger(app)
 
@@ -55,6 +62,7 @@ def user():
         print(username)
         print(radiusSettings)
         data = DefaultUser
+        data['id'] = userId
         data['userName'] = username
         data['radiusSettings'] = radiusSettings#DBMan.createUser(userId,username,radiusSettings)
         response['status'] = 200
@@ -95,261 +103,74 @@ def place():
     if request.method != 'POST':
         response['status'] = 404
         response['message'] = '/place only supports POST requests'
-    userID = request.args
+        retResp = jsonify(response)
+        return retResp
 
+    userId = request.args.get('userId', None)
+    if userId is None:
+        response['status'] = 404
+        response['message'] = 'userId missing'
+        retResp = jsonify(response)
+        return retResp
+    lat = request.args.get('lat', None)
+    lon = request.args.get('lon', None)
 
+    if lat is None or lon is None:
+        response['status'] = 404
+        response['message'] = 'lat or lon missing'
+        retResp = jsonify(response)
+        return retResp
+
+    latLongString = str(lat) + ',' + str(lon)
+    assetType = request.args.get('assetType', None)
+    if assetType is None:
+        response['status'] = 404
+        response['message'] = 'Asset type is missing'
+        retResp = jsonify(response)
+        return retResp
+# check if the post request has the file part
+    if 'asset' not in request.files:
+        response['status'] = 404
+        response['message'] = 'asset not in files'
+        retResp = jsonify(response)
+        return retResp
+    else:
+        file = request.files['asset']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            response['status'] = 404
+            response['message'] = 'asset name was blank'
+            retResp = jsonify(response)
+            return retResp
+        if file and allowed_file(file.filename):
+            extension = file.filename.split('.')[1]
+            assetId = uuid.uuid4().hex
+            filename = assetId + '.' + extension
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    asset = filename
+    assetLink = request.url_root + 'static/' + asset
+    #data = DBMan.placeAsset(assetId,userId,assetLink,assetType,latLongString)
+    data = {}
+    data['assetId'] = assetId
+    data['owner'] = userId
+    data['link'] = assetLink
+    data['type'] = assetType
+    data['latLon'] = latLongString
+
+    response['status'] = 200
+    response['message'] = 'Successfully posted asset'
+    response['data'] = data
+    retResp = jsonify(response)
     return retResp
 
-# @app.route('/hello/<hello>')
-# def hello(hello = None):
-#     """Endpoint returning a blank index file
-#     ---
-#      parameters:
-#      - name: hello
-#        in: path
-#        type: string
-#        required: false
-#        default: World!
-#        responses:
-#         200:
-#        description: A Hello World message
-#
-#     """
-#
-#     print(hello)
-#     return ("Hello"+ hello)
-#
-# @app.route('/healthcheck')
-# def healthcheck():
-#     """Endpoint returning a blank index file
-#     ---
-#     responses:
-#       200:
-#        description: A healthcheck
-#
-#     """
-#
-#     return ("healthcheck")
-#
-# @app.route('/user/settings/<userid>')
-# def userSettings(userid=None):
-#     """
-#         This is the endpoint to handle user settings configuration
-#     ---
-#     parameters:
-#       - in: path
-#         name: userid
-#         type: string
-#     responses:
-#       200:
-#         description: User settings updated
-#     """
-#     response = {}
-#     response["status"] = 200
-#     response["body"] = " User settings updated for UserID :" + userid
-#     response["userid"] = userid
-#     responseJSON = jsonify(response)
-#     return responseJSON
-#
-# @app.route('/search/<lat>/<lon>')
-# def search(lat = None, lon = None):
-#     """Endpoint returning a blank index file
-#     ---
-#     parameters:
-#      - name: lat
-#        in: path
-#        type: string
-#        required: true
-#        default: None
-#      - name: lon
-#        in: path
-#        type: string
-#        required: true
-#        default: None
-#     responses:
-#      200:
-#        description: The latitude and longitude"
-#
-#     """
-#     return ("search:"+ lat + "," + lon)
-#
-# @app.route('/place/lat/lon')
-# def place():
-#     """Endpoint returning a blank index file
-#     """
-#     return "place/lat/lon"
-#
-# @app.route('/collect/<userid>/<itemid>')
-# def collect(userid=None, itemid=None):
-#     """
-#         This is the endpoint to handle adding an item to a users collection
-#     ---
-#     parameters:
-#       - in: path
-#         name: userid
-#         type: string
-#       - in: path
-#         name: itemid
-#         type: string
-#     responses:
-#       200:
-#         description: The task has been created
-#     """
-#     response = {}
-#     response["status"] = 200
-#     response["body"] = "UserID :" + userid + " ItemID : " + itemid
-#     response["userid"] = userid
-#     response["itemid"] = itemid
-#     responseJSON = jsonify(response)
-#     return responseJSON
-#
-# @app.route('/user/<userID>')
-# def getUser(userID = None):
-#     """
-#         This is the endpoint to handle adding an item to a users collection
-#     ---
-#     parameters:
-#       - in: path
-#         name: userid
-#         type: string
-#       - in: path
-#         name: itemid
-#         type: string
-#     responses:
-#       200:
-#         description: The task has been created
-#     """
-#     response = {}
-#     response["status"] = 200
-#     response["body"] = "UserID :" + userid + " ItemID : " + itemid
-#     response["userid"] = userid
-#     response["itemid"] = itemid
-#     responseJSON = jsonify(response)
-#     return responseJSON
-#
-#
-# @app.route('/asset/post')
-# def postAsset():
-#     """
-#         This is the endpoint to handle adding an item to a users collection
-#     ---
-#     parameters:
-#       - in: path
-#         name: userid
-#         type: string
-#       - in: path
-#         name: itemid
-#         type: string
-#     responses:
-#       200:
-#         description: The task has been created
-#     """
-#     response = {}
-#     response["status"] = 200
-#     response["body"] = "UserID :" + userid + " ItemID : " + itemid
-#     response["userid"] = userid
-#     response["itemid"] = itemid
-#     responseJSON = jsonify(response)
-#     return responseJSON
-#
-# @app.route('/asset/<assetID>')
-# def getAsset(assetID=None):
-#     """
-#         This is the endpoint to handle adding an item to a users collection
-#     ---
-#     parameters:
-#       - in: path
-#         name: userid
-#         type: string
-#       - in: path
-#         name: itemid
-#         type: string
-#     responses:
-#       200:
-#         description: The task has been created
-#     """
-#     response = {}
-#     response["status"] = 200
-#     response["body"] = "UserID :" + userid + " ItemID : " + itemid
-#     response["userid"] = userid
-#     response["itemid"] = itemid
-#     responseJSON = jsonify(response)
-#     return responseJSON
-#
-# @app.route('/collect/<userID>/<assetID>')
-# def collectAsset(userID=None, assetID=None):
-#     """
-#         This is the endpoint to handle adding an item to a users collection
-#     ---
-#     parameters:
-#       - in: path
-#         name: userid
-#         type: string
-#       - in: path
-#         name: itemid
-#         type: string
-#     responses:
-#       200:
-#         description: The task has been created
-#     """
-#     response = {}
-#     response["status"] = 200
-#     response["body"] = "UserID :" + userid + " ItemID : " + itemid
-#     response["userid"] = userid
-#     response["itemid"] = itemid
-#     responseJSON = jsonify(response)
-#     return responseJSON
-#
-# @app.route('/asset/nearby/<location>/<radius>')
-# def getAssetsNearby(location='0.0,0.0', radius=10):
-#     """
-#         This is the endpoint to handle adding an item to a users collection
-#     ---
-#     parameters:
-#       - in: path
-#         name: userid
-#         type: string
-#       - in: path
-#         name: itemid
-#         type: string
-#     responses:
-#       200:
-#         description: The task has been created
-#     """
-#     response = {}
-#     response["status"] = 200
-#     response["body"] = "UserID :" + userid + " ItemID : " + itemid
-#     response["userid"] = userid
-#     response["itemid"] = itemid
-#     responseJSON = jsonify(response)
-#     return responseJSON
-#
-#
-#
-# @app.route('/user/create')
-# def createUser():
-#     """
-#         This is the endpoint to handle adding an item to a users collection
-#     ---
-#     parameters:
-#       - in: path
-#         name: userid
-#         type: string
-#       - in: path
-#         name: itemid
-#         type: string
-#     responses:
-#       200:
-#         description: The task has been created
-#     """
-#     response = {}
-#     response["status"] = 200
-#     response["body"] = "UserID :" + userid + " ItemID : " + itemid
-#     response["userid"] = userid
-#     response["itemid"] = itemid
-#     responseJSON = jsonify(response)
-#     return responseJSON
-
+@app.route('/assets/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'],
+                               filename)
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, use_reloader=True)
