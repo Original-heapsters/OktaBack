@@ -186,10 +186,10 @@ def place():
         return retResp
 
 
-    userId = request.args.get('userId', None)
-    lat = request.args.get('lat', None)
-    lon = request.args.get('lon', None)
-    assetType = request.args.get('assetType', None)
+    userId = request.form.get('userId', None)
+    lat = request.form.get('lat', None)
+    lon = request.form.get('lon', None)
+    assetType = request.form.get('assetType', None)
     if userId is None:
         response['status'] = 404
         response['message'] = 'userId missing'
@@ -323,7 +323,7 @@ def usersmarks(userId):
         response['status'] = 404
         response['message'] = '/usersmarks only supports POST requests'
         retResp = jsonify(response)
-        return retResp 
+        return retResp
 
     data =usersAssets(userId)
     response['status'] = 200
@@ -334,7 +334,7 @@ def usersmarks(userId):
     return retResp
 
 
-    
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -352,21 +352,13 @@ def createUser(id, radiusSettings, first=None, last = None,):
 def getUser(id):
     instance = db.session.query(User).filter_by(id=id).first()
     if instance:
-<<<<<<< HEAD
-<<<<<<< HEAD
-        return instance   
-=======
         return instance
 #    else:
         #instance = createUser(id, app.config['DEFAULT_RADIUS'])
         #session.add(instance)
         #session.commit()
 #        return jsonify("User not found")
->>>>>>> 543c5b54c6d32613122779f59c9dfc0133af426d
-=======
 
-        return instance   
->>>>>>> 6a2cbbce862de68824fd951f1ae7fed10a8030e2
 
 def placeAsset(assetId,userId,link,type,latLongString=None):
     exists = Asset.query.filter_by(id=assetId).first()
@@ -385,10 +377,6 @@ def found(id):
     if instance:
         return instance
     else:
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 6a2cbbce862de68824fd951f1ae7fed10a8030e2
         return instance   
 
 def usersAssets(userId):
@@ -408,19 +396,9 @@ def mark(markId, userId, assetId, note=None):
     else:
         return newMark
 
-<<<<<<< HEAD
-=======
+
         return instance
->>>>>>> 543c5b54c6d32613122779f59c9dfc0133af426d
 
-=======
->>>>>>> 6a2cbbce862de68824fd951f1ae7fed10a8030e2
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
+    port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, use_reloader=True)
-
-
-
-
-
-
