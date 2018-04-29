@@ -11,7 +11,7 @@ from DBManager import DBManager
 
 
 UPLOAD_FOLDER = './static'
-ALLOWED_EXTENSIONS = set(['dae', 'mp4', 'png', 'jpg', 'jpeg', 'mp3', 'mov'])
+ALLOWED_EXTENSIONS = set(['dae', 'mp4', 'png', 'jpg', 'jpeg', 'mp3', 'mov','zip'])
 project_dir = os.path.dirname(os.path.abspath(__file__))
 database_file = "sqlite:///{}".format(os.path.join(project_dir, "ardb.db"))
 
