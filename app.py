@@ -169,6 +169,41 @@ def nearby(radius=None, locationString=None):
     retResp = jsonify(response)
     return retResp
 
+@app.route('/found/<assetId>', methods=['GET'])
+def found(assetId=None):
+    response = {}
+    data = DefaultAsset #DBMan.found(assetId)
+    response['status'] = 200
+    response['message'] = 'Successfully fetched found asset'
+    response['data'] = data
+    retResp = jsonify(response)
+    return retResp
+
+@app.route('/mark/<assetId>', methods=['POST'])
+def mark(assetId=None):
+    response = {}
+    markId = uuid.uuid4().hex
+    userId = request.args.get('userId', None)
+    if userId is None:
+        response['status'] = 404
+        response['message'] = 'missing userId'
+        retResp = jsonify(response)
+        return retResp
+    note = request.args.get('note', None)
+    if note is None:
+        note = ''
+    #DBMan.mark(markId, assetId, userId, note)
+    data = {}
+    data['markId'] = markId
+    data['assetId'] = assetId
+    data['userId'] = userId
+    data['note'] = note
+    response['status'] = 200
+    response['message'] = 'Successfully marked asset'
+    response['data'] = data
+    retResp = jsonify(response)
+    return retResp
+
 @app.route('/assets/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'],
